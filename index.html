@@ -1,20 +1,31 @@
-<!DOCTYPE html>
-<html lang="id">
+<!doctype html>
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Test Cloudflare Turnstile</title>
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <meta charset="utf-8"/>
+  <title>hCaptcha demo</title>
+  <script src="https://hcaptcha.com/1/api.js?onload=render&render=explicit" async defer></script>
+  <style>
+    body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+  </style>
 </head>
 <body>
-  <h3>Tes Turnstile</h3>
-  <!-- Production -->
-  <div class="cf-turnstile" data-sitekey="0x4AAAAAAFjwUFZXrIajkk-S"></div>
-  <p id="token-output"></p>
+  <div class="h-captcha"
+     data-sitekey="b9fc5a50-2e5c-457a-9582-80ce342c2534"
+     data-host="discord.com"
+     data-theme="light"
+     data-rqdata="isi-rqdata-kamu">
+  </div>
 
   <script>
-    function onSuccess(token) {
-      document.getElementById("token-output").textContent = "Token: " + token;
-      console.log("Turnstile token:", token);
+    function render(){
+      hcaptcha.render(document.querySelector(".h-captcha"), {
+        sitekey: "b9fc5a50-2e5c-457a-9582-80ce342c2534",
+        origin: "https://discord.com",
+        theme: "light",
+        recaptchacompat: "off",
+        rqdata: "isi-rqdata-kamu",   // <-- tambahkan ini
+        callback: token => { window.captchaSolved = true; }
+      });
     }
   </script>
 </body>
