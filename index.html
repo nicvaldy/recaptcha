@@ -1,32 +1,102 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="id">
 <head>
-  <meta charset="utf-8"/>
-  <title>hCaptcha demo</title>
-  <script src="https://hcaptcha.com/1/api.js?onload=render&render=explicit" async defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Turnstile Explicit Render - Localhost</title>
+  <!-- Gunakan ?render=explicit agar widget tidak otomatis ter-render sebelum turnstile.render() dipanggil -->
+  <script
+    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad"
+    async
+    defer
+  ></script>
   <style>
-    body{display:flex;justify-content:center;align-items:center;height:100vh;margin:0}
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 520px;
+      margin: 48px auto;
+      padding: 0 16px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    pre {
+      background: #f5f5f5;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
-  <div class="h-captcha"
-     data-sitekey="b9fc5a50-2e5c-457a-9582-80ce342c2534"
-     data-host="discord.com"
-     data-theme="light"
-     data-rqdata="isi-rqdata-kamu">
+  <div class="card">
+    <h2>Explicit Render (`turnstile.render`)</h2>
+    <p>Contoh konfigurasi widget Turnstile di <code>localhost</code>.</p>
+
+    <!-- Target container kosong tempat widget akan di-render -->
+    <div id="turnstile-container"></div>
+
+    <div class="controls">
+      <button type="button" id="btn-reset">Reset Widget</button>
+      <button type="button" id="btn-token">Cek Token</button>
+    </div>
+
+    <h3>Status / Token</h3>
+    <pre id="output">Menunggu script Turnstile dimuat...</pre>
   </div>
 
   <script>
-    function render(){
-      hcaptcha.render(document.querySelector(".h-captcha"), {
-        sitekey: "b9fc5a50-2e5c-457a-9582-80ce342c2534",
-        origin: "https://discord.com",
-        theme: "light",
-        recaptchacompat: "off",
-        rqdata: "isi-rqdata-kamu",   // <-- tambahkan ini
-        callback: token => { window.captchaSolved = true; }
+    let widgetId = null;
+    const outputEl = document.getElementById("output");
+
+    // Dipanggil otomatis lewat atribut onload=... pada <script>
+    function onTurnstileLoad() {
+      outputEl.textContent = "Script siap. Me-render widget...";
+
+      // Ganti dengan sitekey milikmu (pastikan localhost terdaftar di widget)
+      // atau pakai dummy testing sitekey Cloudflare untuk simulasi lokal.
+      widgetId = turnstile.render("#turnstile-container", {
+        sitekey: "0x4AAAAAAFjwUFZXrIajkk-S",
+        theme: "auto",         // "light" | "dark" | "auto"
+        size: "normal",        // "normal" | "compact" | "flexible"
+        appearance: "always",  // "always" | "execute" | "interaction-only"
+        callback: function (token) {
+          outputEl.textContent = "Verified!\nToken:\n" + token;
+        },
+        "expired-callback": function () {
+          outputEl.textContent = "Token kedaluwarsa. Silakan verifikasi ulang.";
+        },
+        "error-callback": function (errorCode) {
+          outputEl.textContent = "Error Turnstile (code: " + errorCode + ")";
+        },
       });
     }
+
+    document.getElementById("btn-reset").addEventListener("click", function () {
+      if (widgetId !== null && window.turnstile) {
+        turnstile.reset(widgetId);
+        outputEl.textContent = "Widget di-reset.";
+      }
+    });
+
+    document.getElementById("btn-token").addEventListener("click", function () {
+      if (widgetId !== null && window.turnstile) {
+        const token = turnstile.getResponse(widgetId);
+        outputEl.textContent = token
+          ? "Token aktif:\n" + token
+          : "Belum ada token aktif.";
+      }
+    });
   </script>
 </body>
 </html>
