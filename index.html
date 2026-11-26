@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Turnstile Explicit Render - Localhost</title>
-  <!-- Gunakan ?render=explicit agar widget tidak otomatis ter-render sebelum turnstile.render() dipanggil -->
+  <title>reCAPTCHA Explicit Render - Localhost</title>
+  <!-- Gunakan ?render=explicit&onload=onRecaptchaLoad agar widget di-render manual lewat JS -->
   <script
-    src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onTurnstileLoad"
+    src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit"
     async
     defer
   ></script>
@@ -28,6 +28,10 @@
       margin-top: 14px;
       flex-wrap: wrap;
     }
+    button {
+      padding: 6px 12px;
+      cursor: pointer;
+    }
     pre {
       background: #f5f5f5;
       padding: 12px;
@@ -40,11 +44,11 @@
 </head>
 <body>
   <div class="card">
-    <h2>Explicit Render (`turnstile.render`)</h2>
-    <p>Contoh konfigurasi widget Turnstile di <code>localhost</code>.</p>
+    <h2>Explicit Render (<code>grecaptcha.render</code>)</h2>
+    <p>Contoh konfigurasi widget Google reCAPTCHA di <code>localhost</code>.</p>
 
     <!-- Target container kosong tempat widget akan di-render -->
-    <div id="turnstile-container"></div>
+    <div id="recaptcha-container"></div>
 
     <div class="controls">
       <button type="button" id="btn-reset">Reset Widget</button>
@@ -52,46 +56,46 @@
     </div>
 
     <h3>Status / Token</h3>
-    <pre id="output">Menunggu script Turnstile dimuat...</pre>
+    <pre id="output">Menunggu script reCAPTCHA dimuat...</pre>
   </div>
 
   <script>
     let widgetId = null;
     const outputEl = document.getElementById("output");
 
-    // Dipanggil otomatis lewat atribut onload=... pada <script>
-    function onTurnstileLoad() {
+    // Dipanggil otomatis lewat parameter onload=... pada <script>
+    function onRecaptchaLoad() {
       outputEl.textContent = "Script siap. Me-render widget...";
 
-      // Ganti dengan sitekey milikmu (pastikan localhost terdaftar di widget)
-      // atau pakai dummy testing sitekey Cloudflare untuk simulasi lokal.
-      widgetId = turnstile.render("#turnstile-container", {
-        sitekey: "0x4AAAAAAFjwUFZXrIajkk-S",
-        theme: "auto",         // "light" | "dark" | "auto"
-        size: "normal",        // "normal" | "compact" | "flexible"
-        appearance: "always",  // "always" | "execute" | "interaction-only"
+      // Ganti sitekey dengan milikmu, atau gunakan test sitekey resmi Google di bawah ini:
+      // Test sitekey Google: 6Lc7_ZssAAAAAJlmfpSxDo815GK8C4bT0MGNyv3s
+      widgetId = grecaptcha.render("recaptcha-container", {
+        sitekey: "6Lc7_ZssAAAAAJlmfpSxDo815GK8C4bT0MGNyv3s",
+        theme: "light", // "light" | "dark"
+        size: "normal", // "normal" | "compact"
         callback: function (token) {
+          console.log("reCAPTCHA Token:", token);
           outputEl.textContent = "Verified!\nToken:\n" + token;
         },
         "expired-callback": function () {
           outputEl.textContent = "Token kedaluwarsa. Silakan verifikasi ulang.";
         },
-        "error-callback": function (errorCode) {
-          outputEl.textContent = "Error Turnstile (code: " + errorCode + ")";
+        "error-callback": function () {
+          outputEl.textContent = "Terjadi error koneksi pada reCAPTCHA.";
         },
       });
     }
 
     document.getElementById("btn-reset").addEventListener("click", function () {
-      if (widgetId !== null && window.turnstile) {
-        turnstile.reset(widgetId);
+      if (widgetId !== null && window.grecaptcha) {
+        grecaptcha.reset(widgetId);
         outputEl.textContent = "Widget di-reset.";
       }
     });
 
     document.getElementById("btn-token").addEventListener("click", function () {
-      if (widgetId !== null && window.turnstile) {
-        const token = turnstile.getResponse(widgetId);
+      if (widgetId !== null && window.grecaptcha) {
+        const token = grecaptcha.getResponse(widgetId);
         outputEl.textContent = token
           ? "Token aktif:\n" + token
           : "Belum ada token aktif.";
